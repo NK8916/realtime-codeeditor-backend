@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "author": "Nitin",
   "license": "ISC",
@@ -15,6 +15,11 @@
     "express": "^4.17.1",
     "file-system": "^2.2.2",
     "http": "0.0.1-security",
+    "mongoose": "^5.9.26",
+    "nodemailer": "^6.4.11",
     "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
   }
 }

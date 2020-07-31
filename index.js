@@ -1,9 +1,12 @@
+require("dotenv").config();
+require("./model");
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
 const fs = require("file-system");
 const bodyParser = require("body-parser");
+const userRoutes = require("./routes/user.routes");
 const { promisify } = require("util");
 const exec = promisify(require("child_process").exec);
 const cors = require("cors");
@@ -12,6 +15,7 @@ const port = 8000;
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors());
+app.use("/", userRoutes);
 
 io.on("connection", (client) => {
   console.log("connected");
