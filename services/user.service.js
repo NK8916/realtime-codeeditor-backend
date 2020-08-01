@@ -1,5 +1,4 @@
-const mongoose = require("mongoose");
-const Coder = mongoose.model("Coder");
+const db = require("../db/firebase-config");
 const nodemailer = require("nodemailer");
 const { hash } = require("bcrypt");
 const saltRounds = 10;
@@ -24,15 +23,15 @@ exports.register = async (body) => {
   try {
     console.log(body);
     let user = await getUser(body.email);
-    console.log(user);
+    console.log("data: ", user);
     if (!user) {
       const hashedPassword = await hash(body.password, saltRounds);
-      const userSaved = await Coder.create({
+      const userSaved = await db.collection("users").doc(body.email).create({
         name: body.name,
-        email: body.email,
         password: hashedPassword,
+        status: false,
       });
-      console.log(userSaved);
+      console.log("saved", userSaved);
 
       if (Object.keys(userSaved).length) {
         const { otp } = await sendMail(body.email);
@@ -49,14 +48,18 @@ exports.register = async (body) => {
 
 const updateUser = async (email, body) => {
   try {
-    return Coder.findOneAndUpdate({ email }, body, { new: true });
+    const docRef = db.collection("users").doc(email);
+    return docRef.update(body);
   } catch (error) {
     throw new Error(error);
   }
 };
 const getUser = async (email) => {
   try {
-    return Coder.findOne({ email });
+    console.log("email", email);
+    const userRef = db.collection("users").doc(email);
+    const user = await userRef.get();
+    return user.data();
   } catch (error) {
     throw new Error(error);
   }

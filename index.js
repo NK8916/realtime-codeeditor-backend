@@ -1,5 +1,5 @@
 require("dotenv").config();
-require("./model");
+require("./db/firebase-config");
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
@@ -10,6 +10,7 @@ const userRoutes = require("./routes/user.routes");
 const { promisify } = require("util");
 const exec = promisify(require("child_process").exec);
 const cors = require("cors");
+const db = require("./db/firebase-config");
 const port = 8000;
 
 app.use(bodyParser.urlencoded({ extended: false }));

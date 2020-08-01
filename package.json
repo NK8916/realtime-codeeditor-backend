@@ -15,8 +15,8 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "file-system": "^2.2.2",
+    "firebase-admin": "^9.0.0",
     "http": "0.0.1-security",
-    "mongoose": "^5.9.26",
     "nodemailer": "^6.4.11",
     "socket.io": "^2.3.0"
   },
