@@ -1,18 +1,30 @@
 const db = require("../db/firebase-config");
 const nodemailer = require("nodemailer");
-const { hash } = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const { hash, compare } = require("bcrypt");
 const saltRounds = 10;
 
 exports.verify = async (data) => {
   try {
-    console.log(data);
     let user = await getUser(data.email);
-    console.log(user);
+    console.log("festched", user);
     if (user) {
       if (data.otp == user.otp) {
-        console.log(data, user);
-        return updateUser(data.email, { status: true });
+        console.log("if", data, user);
+        await updateUser(data.email, { status: true });
+
+        const token = jwt.sign({ email: data.email }, process.env.JWT_SECRET, {
+          expiresIn: "24h",
+        });
+        console.log("token", token);
+        return {
+          statusCode: 200,
+          token,
+          message: "Successfully Registered !!!",
+        };
       }
+
+      return { statusCode: 401, message: "Invalid OTP !!!" };
     }
   } catch (error) {
     throw new Error(error);
@@ -41,6 +53,32 @@ exports.register = async (body) => {
       }
     }
     return { statusCode: 409, message: "Already Registered !!!" };
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+exports.login = async (body) => {
+  try {
+    let user = await getUser(body.email);
+    const match = await compare(body.password, user.password);
+    console.log(match);
+    if (match) {
+      if (user.status) {
+        const token = jwt.sign({ email: body.email }, process.env.JWT_SECRET, {
+          expiresIn: "24h",
+        });
+        console.log(token);
+
+        return {
+          statusCode: 200,
+          token,
+          message: "SuccessFully Logged In !!!",
+        };
+      }
+      return { statusCode: 401, message: "Email Is Not Verified Yet !!!" };
+    }
+    return { statusCode: 401, message: "Email or Password is not correct !!!" };
   } catch (error) {
     throw new Error(error);
   }
