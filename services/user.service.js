@@ -4,6 +4,27 @@ const jwt = require("jsonwebtoken");
 const { hash, compare } = require("bcrypt");
 const saltRounds = 10;
 
+exports.resetPassword = async (data) => {
+  console.log(data.password);
+  const hashedPassword = await hash(data.password, saltRounds);
+  console.log(hashedPassword);
+  const result = await updateUser(data.email, { password: hashedPassword });
+  if (result) {
+    return { statusCode: 200, message: "Password Successfully Changed" };
+  }
+};
+
+exports.forgotPassword = async (data) => {
+  let user = await getUser(data.email);
+  if (user) {
+    const message = {
+      html: `<p>To Reset Your Password <a href='http://localhost:3000/reset-password?${data.email}'>Click Here</a></p>`,
+    };
+    await sendMail(data.email, message);
+    return { statusCode: 200 };
+  }
+};
+
 exports.verify = async (data) => {
   try {
     let user = await getUser(data.email);
@@ -46,7 +67,9 @@ exports.register = async (body) => {
       console.log("saved", userSaved);
 
       if (Object.keys(userSaved).length) {
-        const { otp } = await sendMail(body.email);
+        let otp = generateOtp();
+        const message = { text: `Your OTP is ${otp}` };
+        await sendMail(body.email, message);
         const result = await updateUser(body.email, { otp });
         console.debug(result);
         return { statusCode: 200, message: result };
@@ -86,7 +109,9 @@ exports.login = async (body) => {
 
 const updateUser = async (email, body) => {
   try {
+    console.log(email, body);
     const docRef = db.collection("users").doc(email);
+    console.log(docRef);
     return docRef.update(body);
   } catch (error) {
     throw new Error(error);
@@ -103,7 +128,7 @@ const getUser = async (email) => {
   }
 };
 
-const sendMail = async (email) => {
+const sendMail = async (email, message) => {
   console.log(email);
   let transporter = nodemailer.createTransport({
     service: "gmail",
@@ -115,20 +140,19 @@ const sendMail = async (email) => {
 
   console.log(transporter);
 
-  let otp = generateOtp();
-
   let options = {
     from: "code@gmail.com",
     to: email,
     subject: "Email Verification",
-    text: `Your One Time Password is ${otp}`,
+    ...(message.text && { text: message.text }),
+    ...(message.html && { html: message.html }),
   };
 
   let info = await transporter.sendMail(options);
 
   console.log(info);
 
-  return { info, otp };
+  return info;
 };
 
 const generateOtp = () => {
