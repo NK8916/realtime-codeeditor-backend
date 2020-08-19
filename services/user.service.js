@@ -75,7 +75,11 @@ exports.register = async (body) => {
         return { statusCode: 200, message: result };
       }
     }
-    return { statusCode: 409, message: "Already Registered !!!" };
+    return {
+      statusCode: 409,
+      message: "Already Registered !!!",
+      email: body.email,
+    };
   } catch (error) {
     throw new Error(error);
   }
@@ -96,6 +100,7 @@ exports.login = async (body) => {
         return {
           statusCode: 200,
           token,
+          email: body.email,
           message: "SuccessFully Logged In !!!",
         };
       }

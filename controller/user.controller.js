@@ -18,9 +18,11 @@ exports.login = async (req, res, next) => {
   try {
     const result = await login(req.body);
     console.log(result);
-    res
-      .status(result.statusCode)
-      .json({ token: result.token, message: result.message });
+    res.status(result.statusCode).json({
+      token: result.token,
+      message: result.message,
+      email: result.email,
+    });
   } catch (error) {
     res.status(400).send(error);
   }
@@ -43,7 +45,9 @@ exports.register = async (req, res, next) => {
     console.log(req.body);
     const result = await register(req.body);
     if (result) {
-      res.status(result.statusCode).send(result.message);
+      res
+        .status(result.statusCode)
+        .json({ message: result.message, email: result.email });
     }
   } catch (error) {
     res.status(400).send("Not Registered");
